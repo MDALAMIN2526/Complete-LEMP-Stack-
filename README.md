@@ -2,23 +2,145 @@
 
 ## Table of Contents
 1. [System Requirements](#system-requirements)
-2. [Initial Setup](#initial-setup)
-3. [Nginx Installation](#nginx-installation)
-4. [MariaDB Installation](#mariadb-installation)
-5. [PHP Installation](#php-installation)
-6. [phpMyAdmin Installation](#phpmyadmin-installation)
-7. [SSL Configuration](#ssl-configuration)
-8. [NGINX ModSecurity](#nginx-modsecurity)
-9. [Post-Installation](#post-installation)
-10. [Troubleshooting](#troubleshooting)
-11. [Maintenance](#maintenance)
+2. [SSH & UFW Firewall Setup](ssh-and-ufw-firewall-setup)
+3. [Initial Setup](#initial-setup)
+4. [Nginx Installation](#nginx-installation)
+5. [MariaDB Installation](#mariadb-installation)
+6. [PHP Installation](#php-installation)
+7. [phpMyAdmin Installation](#phpmyadmin-installation)
+8. [SSL Configuration](#ssl-configuration)
+9. [NGINX ModSecurity](#nginx-modsecurity)
+10. [Post-Installation](#post-installation)
+11. [Troubleshooting](#troubleshooting)
+12. [Maintenance](#maintenance)
 
 ## System Requirements
 - Ubuntu 20.04/22.04 or Debian 10/11
 - Minimum 1GB RAM (2GB recommended)
 - Root or sudo privileges
 - Domain name pointed to server IP (for SSL)
+## SSH & UFW Firewall Setup
 
+### Step 1: Install UFW
+
+```bash
+sudo apt update && sudo apt install ufw -y
+```
+
+---
+
+### Step 2: Check UFW Status
+
+```bash
+sudo ufw status verbose
+```
+
+If UFW is not active, it will return: `Status: inactive`
+
+---
+
+### Step 3: Change SSH Port
+
+1. Open the SSH daemon configuration file:
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+2. Locate the line:
+
+```
+#Port 22
+```
+
+Uncomment and change it to your desired port number, for example:
+
+```
+Port 463
+```
+
+3. Save and exit the file (`Ctrl+O`, then `Enter`, then `Ctrl+X`).
+
+4. Restart the SSH service to apply the changes:
+
+```bash
+sudo systemctl restart ssh
+```
+
+5. Open a new terminal window and test your SSH connection using the new port:
+
+```bash
+ssh -p 463 your_user@your_server_ip
+```
+
+Do not close your existing SSH session until you verify the new port works.
+
+---
+
+### Step 4: Allow Essential Ports
+
+Replace `463` with your custom SSH port if different.
+
+```bash
+sudo ufw allow 463/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
+
+These commands allow:
+
+- SSH access (custom port)
+- HTTP access
+- HTTPS access
+
+---
+
+### Step 5: Set Default Firewall Policies
+
+This step blocks all other incoming connections except the ones you explicitly allow.
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+```
+
+---
+
+### Step 6: Enable UFW
+
+```bash
+sudo ufw enable
+```
+
+---
+
+### Step 7: Verify Firewall Rules
+
+```bash
+sudo ufw status numbered
+sudo ufw status verbose
+```
+
+Expected output should list only the ports you allowed.
+
+---
+
+### Step 8: Remove Default SSH Port Rule (Optional)
+
+If port 22 is no longer in use and verified working on the new port:
+
+```bash
+sudo ufw delete allow 22/tcp
+```
+
+---
+
+### Tips
+
+- Always test SSH access on the new port before disabling the old one.
+- Use strong SSH passwords or key-based authentication.
+
+---
 ## Initial Setup
 ```bash
 sudo apt update && sudo apt upgrade -y
