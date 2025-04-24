@@ -85,6 +85,7 @@ Replace `463` with your custom SSH port if different.
 sudo ufw allow 463/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
+sudo ufw reload
 ```
 
 These commands allow:
@@ -110,6 +111,11 @@ sudo ufw default allow outgoing
 
 ```bash
 sudo ufw enable
+```
+### Step 6: Remove UFW Ports
+
+```bash
+sudo ufw delete allow 80/tcp
 ```
 
 ---
